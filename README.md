@@ -1,4 +1,4 @@
-# flutter*gpt*
+# flutter_gpt
 
 Use flutter to create a gpt web similar to chatgpt.
 
