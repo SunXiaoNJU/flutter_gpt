@@ -1,35 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gpt_/models/message.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../state/message_state.dart';
 import 'message_item.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends HookConsumerWidget {
   ChatScreen({super.key});
-
-  final List<Message> messages = [
-    Message(content: "Hello", isUser: true, timestamp: DateTime.now()),
-    Message(
-        content: "How are you today?",
-        isUser: false,
-        timestamp: DateTime.now()),
-    Message(
-        content: "Fine, thank you. And you?",
-        isUser: true,
-        timestamp: DateTime.now()),
-    Message(
-        content: "I am fine, too.", isUser: false, timestamp: DateTime.now()),
-  ];
 
   final _textController = TextEditingController();
 
-  _sendMessage(String content) {
+  _sendMessage(String content, WidgetRef ref) {
     final message =
         Message(content: content, isUser: true, timestamp: DateTime.now());
-    messages.add(message);
+    ref.read(messageProvider.notifier).addMessage(message); // 添加消息
     _textController.clear();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final messages = ref.watch(messageProvider); // 获取数据
     return Scaffold(
       appBar: AppBar(
         title: const Center(
@@ -60,7 +49,7 @@ class ChatScreen extends StatelessWidget {
                     onPressed: () {
                       // 这里处理发送事件
                       if (_textController.text.isNotEmpty) {
-                        _sendMessage(_textController.text);
+                        _sendMessage(_textController.text, ref);
                       }
                     },
                     icon: const Icon(
