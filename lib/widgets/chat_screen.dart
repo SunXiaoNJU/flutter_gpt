@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gpt_/models/message.dart';
+import 'package:flutter_gpt_/services/injection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../state/message_state.dart';
 import 'message_item.dart';
@@ -9,11 +10,20 @@ class ChatScreen extends HookConsumerWidget {
 
   final _textController = TextEditingController();
 
-  _sendMessage(String content, WidgetRef ref) {
+  _requestChatGPT(WidgetRef ref, String content) async {
+    final res = await chatgpt.sendChat(content);
+    final text = res.choices.first.message?.content ?? "";
+    final message =
+        Message(content: text, isUser: false, timestamp: DateTime.now());
+    ref.read(messageProvider.notifier).addMessage(message);
+  }
+
+  _sendMessage(WidgetRef ref, String content) {
     final message =
         Message(content: content, isUser: true, timestamp: DateTime.now());
     ref.read(messageProvider.notifier).addMessage(message); // 添加消息
     _textController.clear();
+    _requestChatGPT(ref, content);
   }
 
   @override
@@ -49,7 +59,7 @@ class ChatScreen extends HookConsumerWidget {
                     onPressed: () {
                       // 这里处理发送事件
                       if (_textController.text.isNotEmpty) {
-                        _sendMessage(_textController.text, ref);
+                        _sendMessage(ref, _textController.text);
                       }
                     },
                     icon: const Icon(
